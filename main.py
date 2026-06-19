@@ -13,7 +13,7 @@ async def web_search(query:str) -> dict | None:
     payload = json.dumps({"q": query, "num":2})
     headers = {
     'X-API-KEY': os.getenv("SERPER_API_KEY"),
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json' # to inform the server that requests will be in json format
     }
 
     
@@ -21,7 +21,7 @@ async def web_search(query:str) -> dict | None:
         response = await client.post(
             SERPER_URL, headers=headers, data=payload, timeout=30.0
         )
-        response.raise_for_status()
+        response.raise_for_status() #only executes if there is error, otherwise doesn't run 
         return response.json()
 
 res = asyncio.run(web_search(query="Chroma DB"))
