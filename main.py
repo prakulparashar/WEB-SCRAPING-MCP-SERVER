@@ -1,6 +1,7 @@
 import http.client
 import json
 import os
+from fastmcp import FastMCP
 import asyncio #mandatory library to use async fxns in python
 import httpx #needed when making async api calls, this library basically executes aynschronous https requests
 from dotenv import load_dotenv
@@ -9,6 +10,8 @@ load_dotenv()
 
 
 SERPER_URL = "https://google.serper.dev/search"
+
+mcp = FastMCP("docs")
 
 async def web_search(query:str) -> dict | None:
     payload = json.dumps({"q": query, "num":2})
@@ -40,7 +43,21 @@ docs_urls = {
     "uv": "docs.astral.sh/uv",
 }
 
+
+
+@mcp.tool()
 async def get_docs(query:str, library:str):
+    """
+    Search the latest docs for a given query and library.
+    Supports langchain, openai, llama-index and uv.
+
+    Args:
+        query: The query to search for (e.g. "Publish a package with UV")
+        library: The library to search in (e.g. "uv")
+
+    Returns:
+        Summarized text from the docs with source links.
+    """
     if library not in docs_urls:
         return "no result found"
     
@@ -63,6 +80,11 @@ async def get_docs(query:str, library:str):
         return "/n/n".join(text_parts)
     
 
+def main():
+    mcp.run(transport="stdio")
+    
 
+if __name__ == "__main__":
+    main()
 
     
