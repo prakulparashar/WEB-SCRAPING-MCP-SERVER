@@ -30,7 +30,7 @@ async def web_search(query:str) -> dict | None:
 #search the req. URL and clean its HTML to get only the text
 async def fetch_url(url:str):
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, timeout= 30.0)
+        response = await client.get(url, timeout= 30.0)
         cleaned_response = clean_html_to_text(response.text)
         return cleaned_response
 
@@ -46,7 +46,7 @@ docs_urls = {
 
 
 @mcp.tool()
-async def get_docs(query:str, library:str):
+async def get_docs(query: str, library: str):
     """
     Search the latest docs for a given query and library.
     Supports langchain, openai, llama-index and uv.
@@ -59,26 +59,24 @@ async def get_docs(query:str, library:str):
         Summarized text from the docs with source links.
     """
     if library not in docs_urls:
-        return "no result found"
+        raise ValueError(f"Library {library} not supported by this tool")
     
     query = f"site:{docs_urls[library]} {query}"
 
     results = await web_search(query)
 
     if len(results["organic"]) == 0:
-        return "no result found"
+        return "No results found"
     
     text_parts = []
-    for result in results:
+    for result in results["organic"]:
         link = result.get("link", "")
-
         raw = await fetch_url(link)
         if raw:
-            labeled = f"source: {link}/n{raw}" 
+            labeled = f"SOURCE: {link}\n{raw}"
             text_parts.append(labeled)
-
-        return "/n/n".join(text_parts)
-    
+    return "\n\n".join(text_parts)
+        
 
 def main():
     mcp.run(transport="stdio")
@@ -86,5 +84,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    

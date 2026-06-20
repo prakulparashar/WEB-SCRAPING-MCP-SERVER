@@ -7,5 +7,31 @@ import os
 from dotenv import load_dotenv
 from utils import get_response_from_llm
 
-load_dotenv
 
+load_dotenv()
+
+server_params = StdioServerParameters(
+    command="uv",
+    args=["run", "main.py"],
+    env=None,
+    )
+
+async def main():
+
+    async with stdio_client(server_params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            tools_response = await session.list_tools()
+            print("Available tools:", [t.name for t in tools_response.tools])
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
